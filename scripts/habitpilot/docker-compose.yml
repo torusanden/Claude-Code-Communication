@@ -7,7 +7,7 @@ services:
     container_name: habitpilot-db
     environment:
       POSTGRES_USER: ${DB_USER:-habitpilot}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-habitpilot123}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-habitpilot}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -50,9 +50,9 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3001
-      DATABASE_URL: postgresql://${DB_USER:-habitpilot}:${DB_PASSWORD:-habitpilot123}@postgres:5432/${DB_NAME:-habitpilot}
+      DATABASE_URL: postgresql://${DB_USER:-habitpilot}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-habitpilot}
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
     ports:
       - "3001:3001"
