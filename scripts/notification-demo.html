@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通知システムデモ - HabitPilot</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f0f2f5;
+    }
+
+    .demo-container {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      color: #1a73e8;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #5f6368;
+      margin-bottom: 32px;
+    }
+
+    .demo-section {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .demo-section h2 {
+      font-size: 18px;
+      color: #202124;
+      margin-bottom: 16px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .demo-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .demo-btn.primary {
+      background: #1a73e8;
+      color: white;
+    }
+
+    .demo-btn.primary:hover {
+      background: #1557b0;
+    }
+
+    .demo-btn.secondary {
+      background: white;
+      color: #1a73e8;
+      border: 1px solid #dadce0;
+    }
+
+    .demo-btn.secondary:hover {
+      background: #f8f9fa;
+    }
+
+    .status-panel {
+      background: white;
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid #dadce0;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .status-value {
+      font-weight: 500;
+      color: #1a73e8;
+    }
+
+    .log-container {
+      background: #202124;
+      color: #9aa0a6;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+    }
+
+    .log-entry.success {
+      color: #81c995;
+    }
+
+    .log-entry.error {
+      color: #f28b82;
+    }
+
+    .habit-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .habit-card {
+      background: white;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .habit-card:hover {
+      border-color: #1a73e8;
+      box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
+    }
+
+    .habit-card.scheduled {
+      border-color: #34a853;
+      background: #e8f5e9;
+    }
+
+    .settings-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .settings-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>🔔 通知システムデモ</h1>
+    <p class="subtitle">HabitPilot通知機能のインタラクティブデモンストレーション</p>
+
+    <!-- ステータスセクション -->
+    <div class="demo-section">
+      <h2>📊 システムステータス</h2>
+      <div class="status-panel">
+        <div class="status-item">
+          <span>通知権限</span>
+          <span class="status-value" id="permissionStatus">確認中...</span>
+        </div>
+        <div class="status-item">
+          <span>アクティブなリマインダー</span>
+          <span class="status-value" id="activeReminders">0</span>
+        </div>
+        <div class="status-item">
+          <span>次回通知予定</span>
+          <span class="status-value" id="nextNotification">なし</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 基本機能デモ -->
+    <div class="demo-section">
+      <h2>🚀 基本機能</h2>
+      <div class="button-group">
+        <button class="demo-btn primary" onclick="requestPermission()">
+          通知権限をリクエスト
+        </button>
+        <button class="demo-btn secondary" onclick="sendSimpleNotification()">
+          シンプル通知
+        </button>
+        <button class="demo-btn secondary" onclick="sendRichNotification()">
+          リッチ通知
+        </button>
+        <button class="demo-btn secondary" onclick="checkSettings()">
+          設定を確認
+        </button>
+      </div>
+      <a href="notification-settings.html" class="settings-link">⚙️ 詳細設定画面を開く</a>
+    </div>
+
+    <!-- 習慣スケジューリングデモ -->
+    <div class="demo-section">
+      <h2>⏰ 習慣リマインダー</h2>
+      <p style="color: #5f6368; margin-bottom: 16px;">習慣をクリックしてリマインダーを設定</p>
+      <div class="habit-demo" id="habitGrid">
+        <!-- 動的に生成 -->
+      </div>
+    </div>
+
+    <!-- ログセクション -->
+    <div class="demo-section">
+      <h2>📝 実行ログ</h2>
+      <div class="log-container" id="logContainer">
+        <div class="log-entry">システムを初期化しています...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="notification-system.js"></script>
+  <script>
+    // デモ用習慣データ
+    const demoHabits = [
+      { id: 'water', name: '💧 水分補給', emoji: '💧' },
+      { id: 'stretch', name: '🧘 ストレッチ', emoji: '🧘' },
+      { id: 'walk', name: '🚶 散歩', emoji: '🚶' },
+      { id: 'journal', name: '📝 日記', emoji: '📝' },
+      { id: 'meditate', name: '🧘‍♀️ 瞑想', emoji: '🧘‍♀️' },
+      { id: 'vitamins', name: '💊 サプリメント', emoji: '💊' }
+    ];
+
+    // ログ表示
+    function addLog(message, type = 'info') {
+      const logContainer = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString('ja-JP');
+      entry.textContent = `[${timestamp}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // ステータス更新
+    function updateStatus() {
+      // 権限状態
+      const permission = Notification.permission;
+      const permissionEl = document.getElementById('permissionStatus');
+      permissionEl.textContent = {
+        'granted': '✅ 許可済み',
+        'denied': '❌ 拒否',
+        'default': '⏸️ 未設定'
+      }[permission] || '不明';
+
+      // アクティブリマインダー数
+      const activeCount = window.notificationSystem.scheduledNotifications.size;
+      document.getElementById('activeReminders').textContent = activeCount;
+
+      // 次回通知
+      let nextTime = null;
+      window.notificationSystem.scheduledNotifications.forEach(schedule => {
+        if (!nextTime || schedule.nextNotification < nextTime) {
+          nextTime = schedule.nextNotification;
+        }
+      });
+      
+      document.getElementById('nextNotification').textContent = 
+        nextTime ? nextTime.toLocaleTimeString('ja-JP') : 'なし';
+    }
+
+    // 権限リクエスト
+    async function requestPermission() {
+      addLog('通知権限をリクエストしています...');
+      const result = await window.notificationSystem.requestPermission();
+      
+      if (result === 'granted') {
+        addLog('通知権限が許可されました！', 'success');
+      } else {
+        addLog(`通知権限: ${result}`, 'error');
+      }
+      
+      updateStatus();
+    }
+
+    // シンプル通知
+    function sendSimpleNotification() {
+      addLog('シンプル通知を送信...');
+      window.notificationSystem.showNotification('HabitPilot', {
+        body: 'これはシンプルな通知です'
+      });
+      addLog('シンプル通知を送信しました', 'success');
+    }
+
+    // リッチ通知
+    function sendRichNotification() {
+      addLog('リッチ通知を送信...');
+      window.notificationSystem.showNotification('習慣達成おめでとう！ 🎉', {
+        body: '今日も素晴らしい一日でした。明日も頑張りましょう！',
+        icon: '🏆',
+        badge: '✨',
+        image: 'https://via.placeholder.com/300x150?text=Great+Job!',
+        actions: [
+          { action: 'view', title: '詳細を見る' },
+          { action: 'dismiss', title: '閉じる' }
+        ]
+      });
+      addLog('リッチ通知を送信しました', 'success');
+    }
+
+    // 設定確認
+    function checkSettings() {
+      const settings = window.notificationSystem.settings;
+      addLog('現在の設定:');
+      addLog(`- 通知有効: ${settings.enabled ? 'はい' : 'いいえ'}`);
+      addLog(`- デフォルト時間: ${settings.defaultTime}`);
+      addLog(`- デフォルト頻度: ${settings.defaultFrequency}`);
+      addLog(`- 習慣別設定: ${Object.keys(settings.habits).length}個`);
+    }
+
+    // 習慣グリッドを生成
+    function renderHabitGrid() {
+      const grid = document.getElementById('habitGrid');
+      grid.innerHTML = '';
+      
+      demoHabits.forEach(habit => {
+        const card = document.createElement('div');
+        card.className = 'habit-card';
+        card.id = `habit-${habit.id}`;
+        
+        const isScheduled = window.notificationSystem.scheduledNotifications.has(habit.id);
+        if (isScheduled) {
+          card.classList.add('scheduled');
+        }
+        
+        card.innerHTML = `
+          <div style="font-size: 32px; margin-bottom: 8px;">${habit.emoji}</div>
+          <div style="font-weight: 500;">${habit.name}</div>
+          <div style="font-size: 12px; color: #5f6368; margin-top: 4px;">
+            ${isScheduled ? '✅ 設定済み' : 'クリックして設定'}
+          </div>
+        `;
+        
+        card.onclick = () => toggleHabitReminder(habit);
+        grid.appendChild(card);
+      });
+    }
+
+    // 習慣リマインダーの切り替え
+    function toggleHabitReminder(habit) {
+      const isScheduled = window.notificationSystem.scheduledNotifications.has(habit.id);
+      
+      if (isScheduled) {
+        window.notificationSystem.cancelHabitReminder(habit.id);
+        addLog(`${habit.name} のリマインダーをキャンセルしました`);
+      } else {
+        // デモ用に現在時刻から1分後に設定
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 1);
+        const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        window.notificationSystem.scheduleHabitReminder(habit.id, time, 'hourly');
+        addLog(`${habit.name} のリマインダーを設定しました (${time})`, 'success');
+        
+        // デモ用に5秒後に通知
+        setTimeout(() => {
+          window.notificationSystem.showNotification(
+            `${habit.emoji} ${habit.name}の時間です！`,
+            {
+              body: '習慣を実行しましょう',
+              icon: habit.emoji,
+              timestamp: Date.now()
+            }
+          );
+        }, 5000);
+      }
+      
+      renderHabitGrid();
+      updateStatus();
+    }
+
+    // 初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      addLog('通知システムを初期化しました', 'success');
+      updateStatus();
+      renderHabitGrid();
+      
+      // ステータスを定期更新
+      setInterval(updateStatus, 1000);
+    });
+
+    // キーボードショートカット
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'n' && e.ctrlKey) {
+        sendSimpleNotification();
+      }
+    });
+  </script>
+</body>
+</html>

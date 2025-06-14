@@ -40,7 +40,7 @@ cd Claude-Code-Communication
 **まず社長（PRESIDENT）を起動：**
 ```bash
 # 新しいターミナルを開いて
-tmux attach -t president
+tmux attach -t multiagent_habit
 
 # Claudeを起動（ブラウザで認証が必要）
 claude
@@ -49,8 +49,8 @@ claude
 **次に部下たちを一括起動：**
 ```bash
 # 別のターミナルで
-for i in {0..3}; do 
-  tmux send-keys -t multiagent:0.$i 'claude --dangerously-skip-permissions' C-m
+for agent in habit_boss1 habit_worker1 habit_worker2 habit_worker3; do
+  ./agent-send-habit.sh $agent "/init"
 done
 ```
 
